@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.es.mapper.MetricMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.es.modal.entity.Metric">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="createdAt" column="created_at" jdbcType="TIMESTAMP"/>
+            <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+            <result property="deleted" column="deleted" jdbcType="BIT"/>
+            <result property="lockVer" column="lock_ver" jdbcType="INTEGER"/>
+            <result property="updatedAt" column="updated_at" jdbcType="TIMESTAMP"/>
+            <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+            <result property="snapshotStat" column="snapshot_stat" jdbcType="VARCHAR"/>
+            <result property="snapshotVer" column="snapshot_ver" jdbcType="INTEGER"/>
+            <result property="uid" column="uid" jdbcType="VARCHAR"/>
+            <result property="aggregationType" column="aggregation_type" jdbcType="VARCHAR"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
+            <result property="displayName" column="display_name" jdbcType="VARCHAR"/>
+            <result property="owner" column="owner" jdbcType="VARCHAR"/>
+            <result property="settings" column="settings" jdbcType="OTHER"/>
+            <result property="status" column="status" jdbcType="VARCHAR"/>
+            <result property="tags" column="tags" jdbcType="OTHER"/>
+            <result property="columnId" column="column_id" jdbcType="BIGINT"/>
+            <result property="datasetId" column="dataset_id" jdbcType="BIGINT"/>
+            <result property="primaryTimeDim" column="primary_time_dim" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,created_at,created_by,
+        deleted,lock_ver,updated_at,
+        updated_by,snapshot_stat,snapshot_ver,
+        uid,aggregation_type,description,
+        display_name,owner,settings,
+        status,tags,column_id,
+        dataset_id,primary_time_dim
+    </sql>
+</mapper>
