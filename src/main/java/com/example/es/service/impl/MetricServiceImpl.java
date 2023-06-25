@@ -20,6 +20,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -36,6 +37,9 @@ public class MetricServiceImpl extends ServiceImpl<MetricMapper, Metric> impleme
 
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+
+    @Resource
+    private RedisTemplate<String, List<MetricVO>> redisTemplate;
 
     @Override
     public Page<MetricVO> getMetrics(int pageNum, int pageSize, String sort, SortOrder order, MetricDTO metric) {
@@ -83,6 +87,11 @@ public class MetricServiceImpl extends ServiceImpl<MetricMapper, Metric> impleme
 
     @Override
     public List<MetricVO> searchMetrics(String keyword) {
+        //先查询Redis，如果已经缓存了，直接返回缓存结果，如果没有缓存，则继续查询ES
+        List<MetricVO> metricVOList = redisTemplate.opsForValue().get(keyword);
+        if(metricVOList != null) {
+            return metricVOList;
+        }
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         //过滤
         boolQueryBuilder.filter(QueryBuilders.termQuery("deleted", "false"));
@@ -110,7 +119,9 @@ public class MetricServiceImpl extends ServiceImpl<MetricMapper, Metric> impleme
         if(ids.isEmpty()){
             return null;
         }
-        return this.getBaseMapper().selectBatchIds(ids).stream().map(this::convertToMetricVO).toList();
+        List<MetricVO> result = this.getBaseMapper().selectBatchIds(ids).stream().map(this::convertToMetricVO).toList();
+        redisTemplate.opsForValue().set(keyword, result);
+        return result;
     }
 
     private QueryWrapper<Metric> buildQueryWrapper(MetricDTO metric) {

@@ -2,8 +2,10 @@ package com.example.es.modal.vo;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class MetricVO {
+public class MetricVO implements Serializable {
     private Long id;
 
     private String uid;
