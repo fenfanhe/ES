@@ -3,7 +3,7 @@ package com.example.es.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.es.SortOrder;
+import com.example.es.constant.SortOrder;
 import com.example.es.modal.dto.MetricDTO;
 import com.example.es.modal.entity.Metric;
 import com.example.es.modal.vo.MetricVO;
@@ -11,6 +11,9 @@ import com.example.es.service.MetricService;
 import com.example.es.mapper.MetricMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
 * @author C5311821
@@ -26,19 +29,7 @@ public class MetricServiceImpl extends ServiceImpl<MetricMapper, Metric> impleme
         Page<Metric> page = new Page<>(pageNum, pageSize);
 
         //create query wrapper
-        QueryWrapper<Metric> queryWrapper = new QueryWrapper<>();
-
-        if(StringUtils.hasText(metric.getDescription())) {
-            queryWrapper.like("description", metric.getDescription());
-        }
-
-        if(StringUtils.hasText(metric.getDisplayName())) {
-            queryWrapper.like("display_name", metric.getDisplayName());
-        }
-
-        if(metric.getOwner() != null) {
-            queryWrapper.eq("owner", metric.getOwner());
-        }
+        QueryWrapper<Metric> queryWrapper = this.buildQueryWrapper(metric);
 
         // sort
         if(StringUtils.hasText(sort)) {
@@ -56,6 +47,43 @@ public class MetricServiceImpl extends ServiceImpl<MetricMapper, Metric> impleme
         metricVOPage.setCurrent(metrics.getCurrent());
         metricVOPage.setRecords(metrics.getRecords().stream().map(this::convertToMetricVO).toList());
         return metricVOPage;
+    }
+
+    @Override
+    public List<MetricVO> getAllMetrics(MetricDTO metricDTO) {
+        //create query wrapper
+        QueryWrapper<Metric> queryWrapper = this.buildQueryWrapper(metricDTO);
+        return this.getBaseMapper().selectList(queryWrapper).stream().map(this::convertToMetricVO).toList();
+    }
+
+    @Override
+    public void updateMetric(Long id, MetricDTO metricDTO) {
+        Metric metric = this.getById(id);
+        metric.setDisplayName(metricDTO.getDisplayName());
+        metric.setDescription(metricDTO.getDescription());
+        metric.setOwner(metricDTO.getOwner());
+        metric.setSettings(metricDTO.getSettings());
+        metric.setStatus(metricDTO.getStatus());
+        this.updateById(metric);
+    }
+
+    private QueryWrapper<Metric> buildQueryWrapper(MetricDTO metric) {
+        //create query wrapper
+        QueryWrapper<Metric> queryWrapper = new QueryWrapper<>();
+
+        if(StringUtils.hasText(metric.getDescription())) {
+            queryWrapper.like("description", metric.getDescription());
+        }
+
+        if(StringUtils.hasText(metric.getDisplayName())) {
+            queryWrapper.like("display_name", metric.getDisplayName());
+        }
+
+        if(metric.getOwner() != null) {
+            queryWrapper.eq("owner", metric.getOwner());
+        }
+
+        return queryWrapper;
     }
 
     private MetricVO convertToMetricVO(Metric metric) {

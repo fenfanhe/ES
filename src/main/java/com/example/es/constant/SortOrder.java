@@ -1,4 +1,4 @@
-package com.example.es;
+package com.example.es.constant;
 
 
 public enum SortOrder {

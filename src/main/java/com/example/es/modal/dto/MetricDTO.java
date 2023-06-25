@@ -1,11 +1,10 @@
 package com.example.es.modal.dto;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 
 @Data
 public class MetricDTO {
-
-    private String id;
 
     private String uid;
 
