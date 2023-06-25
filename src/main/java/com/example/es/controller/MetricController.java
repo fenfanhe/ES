@@ -5,10 +5,11 @@ import com.example.es.constant.SortOrder;
 import com.example.es.modal.dto.MetricDTO;
 import com.example.es.modal.vo.MetricVO;
 import com.example.es.service.MetricService;
-import jakarta.annotation.Resource;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
 import java.util.List;
 
 @RestController
@@ -46,6 +47,11 @@ public class MetricController {
     @DeleteMapping("/{id}")
     public void deleteMetric(@PathVariable("id") Long id) {
         metricService.removeById(id);
+    }
+
+    @GetMapping("/search")
+    public List<MetricVO> searchMetrics(@RequestParam("keyword") String keyword) {
+        return metricService.searchMetrics(keyword);
     }
 
 }

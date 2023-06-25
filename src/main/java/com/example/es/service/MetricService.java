@@ -8,7 +8,6 @@ import com.example.es.modal.entity.Metric;
 import com.example.es.modal.vo.MetricVO;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
 * @author C5311821
@@ -21,4 +20,6 @@ public interface MetricService extends IService<Metric> {
     List<MetricVO> getAllMetrics(MetricDTO metricDTO);
 
     void updateMetric(Long id, MetricDTO metricDTO);
+
+    List<MetricVO> searchMetrics(String keyword);
 }

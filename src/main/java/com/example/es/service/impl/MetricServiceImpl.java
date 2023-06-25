@@ -6,14 +6,25 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.es.constant.SortOrder;
 import com.example.es.modal.dto.MetricDTO;
 import com.example.es.modal.entity.Metric;
+import com.example.es.modal.entity.MetricES;
 import com.example.es.modal.vo.MetricVO;
 import com.example.es.service.MetricService;
 import com.example.es.mapper.MetricMapper;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.List;
-import java.util.Optional;
 
 /**
 * @author C5311821
@@ -22,6 +33,9 @@ import java.util.Optional;
 */
 @Service
 public class MetricServiceImpl extends ServiceImpl<MetricMapper, Metric> implements MetricService {
+
+    @Resource
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     @Override
     public Page<MetricVO> getMetrics(int pageNum, int pageSize, String sort, SortOrder order, MetricDTO metric) {
@@ -65,6 +79,38 @@ public class MetricServiceImpl extends ServiceImpl<MetricMapper, Metric> impleme
         metric.setSettings(metricDTO.getSettings());
         metric.setStatus(metricDTO.getStatus());
         this.updateById(metric);
+    }
+
+    @Override
+    public List<MetricVO> searchMetrics(String keyword) {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        //过滤
+        boolQueryBuilder.filter(QueryBuilders.termQuery("deleted", "false"));
+
+        //搜索条件
+        boolQueryBuilder.should(QueryBuilders.matchQuery("displayName", keyword));
+        boolQueryBuilder.should(QueryBuilders.matchQuery("description", keyword));
+        boolQueryBuilder.minimumShouldMatch(1);
+
+        //排序
+        SortBuilder<?> sortBuilder = SortBuilders.scoreSort();
+        sortBuilder = SortBuilders.fieldSort("displayName");
+        sortBuilder.order(org.elasticsearch.search.sort.SortOrder.ASC);
+
+        //分页
+        PageRequest pageRequest = PageRequest.of(0, 10);
+
+        //查询
+        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(boolQueryBuilder)
+//                .withPageable(pageRequest)
+//                .withSorts(sortBuilder)
+                .build();
+        SearchHits<MetricES> searchHits = elasticsearchRestTemplate.search(searchQuery, MetricES.class);
+        List<Long> ids = searchHits.stream().map(hit -> hit.getContent().getId()).toList();
+        if(ids.isEmpty()){
+            return null;
+        }
+        return this.getBaseMapper().selectBatchIds(ids).stream().map(this::convertToMetricVO).toList();
     }
 
     private QueryWrapper<Metric> buildQueryWrapper(MetricDTO metric) {

@@ -1,12 +1,14 @@
-package com.example.es.modal.dto;
+package com.example.es.modal.entity;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
+import java.io.Serializable;
+
 @Document(indexName = "metric")
 @Data
-public class MetricESDTO {
+public class MetricES implements Serializable {
     @Id
     private Long id;
 
@@ -29,4 +31,6 @@ public class MetricESDTO {
     private Long datasetId;
 
     private Long primaryTimeDim;
+
+    private Boolean deleted;
 }
