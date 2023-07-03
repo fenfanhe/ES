@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
 * @author C5311821
@@ -121,6 +122,7 @@ public class MetricServiceImpl extends ServiceImpl<MetricMapper, Metric> impleme
         }
         List<MetricVO> result = this.getBaseMapper().selectBatchIds(ids).stream().map(this::convertToMetricVO).toList();
         redisTemplate.opsForValue().set(keyword, result);
+        redisTemplate.expire(keyword, 1, TimeUnit.MINUTES);
         return result;
     }
 
